@@ -1,0 +1,48 @@
+\contentsline {section}{\numberline {1}Introduction}{5}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Problem Statement}{5}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Approach Overview}{5}{subsection.1.2}%
+\contentsline {section}{\numberline {2}Model Development}{5}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Fundamental Assumptions}{5}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Governing Equations}{6}{subsection.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.1}State of Charge Dynamics}{6}{subsubsection.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.2.2}Thermal Dynamics}{6}{subsubsection.2.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.3}Aging Dynamics}{6}{subsubsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.3}Power Consumption Model}{7}{subsection.2.3}%
+\contentsline {subsubsection}{\numberline {2.3.1}Screen Power}{7}{subsubsection.2.3.1}%
+\contentsline {subsubsection}{\numberline {2.3.2}CPU Power}{7}{subsubsection.2.3.2}%
+\contentsline {subsubsection}{\numberline {2.3.3}Network Power}{7}{subsubsection.2.3.3}%
+\contentsline {subsection}{\numberline {2.4}Temperature Effects}{7}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Voltage-SOC Relationship}{8}{subsection.2.5}%
+\contentsline {section}{\numberline {3}Parameter Estimation and Validation}{8}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Data Sources}{8}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Key Parameters}{8}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Model Validation}{8}{subsection.3.3}%
+\contentsline {section}{\numberline {4}Results and Analysis}{9}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Usage Scenario Comparison}{9}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Power Consumption Breakdown}{11}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Temperature Effects}{12}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Battery Aging}{13}{subsection.4.4}%
+\contentsline {section}{\numberline {5}Sensitivity Analysis}{14}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Parameter Sensitivity}{14}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Sensitivity Rankings}{15}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Uncertainty Analysis}{15}{subsection.5.3}%
+\contentsline {section}{\numberline {6}Practical Recommendations}{16}{section.6}%
+\contentsline {subsection}{\numberline {6.1}User Recommendations}{16}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Operating System Design Recommendations}{16}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Hardware Design Implications}{17}{subsection.6.3}%
+\contentsline {section}{\numberline {7}Model Extensions}{17}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Generalization to Other Devices}{17}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Advanced Features}{18}{subsection.7.2}%
+\contentsline {section}{\numberline {8}Strengths and Limitations}{19}{section.8}%
+\contentsline {subsection}{\numberline {8.1}Strengths}{19}{subsection.8.1}%
+\contentsline {subsection}{\numberline {8.2}Limitations}{19}{subsection.8.2}%
+\contentsline {subsection}{\numberline {8.3}Model Performance}{19}{subsection.8.3}%
+\contentsline {section}{\numberline {9}Conclusions}{20}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Key Achievements}{20}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}Practical Impact}{20}{subsection.9.2}%
+\contentsline {subsection}{\numberline {9.3}Future Directions}{21}{subsection.9.3}%
+\contentsline {section}{\numberline {A}Mathematical Derivation Details}{22}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}Energy Balance Equation}{22}{subsection.A.1}%
+\contentsline {subsection}{\numberline {A.2}Arrhenius Temperature Dependence}{22}{subsection.A.2}%
+\contentsline {section}{\numberline {B}Numerical Implementation}{22}{appendix.B}%
+\contentsline {section}{\numberline {C}Code Availability}{23}{appendix.C}%

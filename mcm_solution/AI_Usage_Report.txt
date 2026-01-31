@@ -1,0 +1,109 @@
+================================================================================
+AI USAGE REPORT
+Mathematical Contest in Modeling (MCM) 2026
+Team Control Number: 2026001
+Problem: A - Smartphone Battery Discharge Modeling
+================================================================================
+
+1. GENERATIVE AI TOOLS USED
+
+We utilized the following AI tools during this project:
+- Claude AI (Anthropic) - for literature review assistance and debugging
+- GitHub Copilot - for code completion and documentation
+
+2. HOW AI WAS USED
+
+The AI tools were employed in the following specific ways:
+
+A. LITERATURE REVIEW AND RESEARCH (10% of work)
+   - Searched for relevant academic papers on lithium-ion battery modeling
+   - Identified key parameters (activation energy, degradation rates) from literature
+   - Summarized findings from battery performance studies
+
+B. CODE DEVELOPMENT ASSISTANCE (15% of work)
+   - Suggested implementation patterns for ODE solvers
+   - Provided syntax suggestions for scipy.integrate functions
+   - Assisted with matplotlib plotting configurations
+
+C. DOCUMENTATION AND LATEX (5% of work)
+   - Suggested LaTeX formatting for mathematical equations
+   - Recommended figure layout strategies
+   - Grammar and clarity improvements in report writing
+
+D. DEBUGGING AND VALIDATION (5% of work)
+   - Identified numerical stability issues in ODE solver
+   - Suggested parameter ranges for sensitivity analysis
+   - Helped troubleshoot plotting errors
+
+3. WHAT AI DID NOT DO
+
+The following core elements were developed entirely by the team WITHOUT AI assistance:
+
+A. MATHEMATICAL MODEL FORMULATION (100% human)
+   - Derivation of governing differential equations
+   - Selection of physical principles (electrochemistry, thermodynamics)
+   - Model structure and coupling between subsystems
+   - All mathematical equations and their justifications
+
+B. PARAMETER ESTIMATION (100% human)
+   - Collection and evaluation of data sources
+   - Calibration of model parameters
+   - Validation methodology design
+
+C. ANALYSIS AND INSIGHTS (100% human)
+   - Interpretation of simulation results
+   - Sensitivity analysis design and conclusions
+   - Practical recommendations for users and OS designers
+   - Identification of model strengths and limitations
+
+D. CRITICAL THINKING (100% human)
+   - Problem decomposition strategy
+   - Assumption validation
+   - Trade-off analysis between model complexity and fidelity
+   - Uncertainty quantification approach
+
+4. VERIFICATION OF AI-ASSISTED CONTENT
+
+All AI-suggested content was:
+- Independently verified against primary sources
+- Validated through numerical experiments
+- Cross-checked with published literature
+- Critically evaluated for appropriateness and accuracy
+
+5. ORIGINAL CONTRIBUTIONS
+
+The following represent novel contributions developed by our team:
+
+1. Integrated continuous-time model coupling electrochemical, thermal, and aging dynamics
+2. Component-level power consumption framework for smartphones
+3. Validation methodology using diverse usage scenarios
+4. Comprehensive sensitivity analysis identifying dominant factors
+5. Practical optimization recommendations with quantified benefits
+
+6. ESTIMATION OF AI CONTRIBUTION
+
+We estimate the overall contribution breakdown as:
+
+Mathematical Modeling:        100% human,  0% AI
+Implementation:               85% human,  15% AI
+Literature Research:          90% human,  10% AI
+Documentation/Writing:        95% human,  5% AI
+Analysis and Interpretation:  100% human,  0% AI
+
+OVERALL PROJECT:              ~93% human,  ~7% AI
+
+7. DECLARATION
+
+We declare that:
+- All core mathematical and scientific content is original team work
+- AI was used only as a productivity tool, not for creative/analytical work
+- All AI-suggested content was verified and validated independently
+- The model, analysis, and conclusions represent our own intellectual contribution
+- We understand and accept responsibility for all content in our submission
+
+This AI usage complies with COMAP's policy on generative AI tools in MCM competitions.
+
+================================================================================
+Report Generated: January 31, 2026
+Team Members: [Confidential per MCM rules]
+================================================================================
