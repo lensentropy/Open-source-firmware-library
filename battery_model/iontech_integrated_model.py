@@ -487,6 +487,41 @@ class BluetoothPowerModel:
         
         return base * factor / 1000
     
+    def multi_device_power(self, num_devices: int, mode: str = 'ble',
+                           activity_level: float = 0.1) -> float:
+        """
+        多设备连接功耗模型
+        
+        P_multi = N * P_single * (1 + 0.1*(N-1))
+        
+        调度开销约为每增加一个设备增加10%功耗
+        
+        参数:
+            num_devices: 连接设备数量
+            mode: 'ble' 或 'classic'
+            activity_level: 活跃度 (0-1)
+        """
+        p = self.params
+        
+        if mode == 'ble':
+            # BLE设备功耗
+            if activity_level < 0.05:
+                base_power = p.ble_connected_idle_mw
+            else:
+                base_power = p.ble_connected_idle_mw + \
+                            (p.ble_connected_active_mw - p.ble_connected_idle_mw) * activity_level
+        else:
+            # Classic BT设备
+            base_power = p.bt_classic_audio_mw * activity_level + \
+                        p.ble_standby_mw * (1 - activity_level)
+        
+        # 多设备开销因子
+        overhead_factor = 1 + 0.1 * (num_devices - 1)
+        
+        total_power = num_devices * base_power * overhead_factor
+        
+        return total_power / 1000
+
     def get_power(self, mode: BluetoothMode, **kwargs) -> float:
         """获取指定模式的功耗"""
         p = self.params
