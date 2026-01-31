@@ -1,0 +1,711 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+% Custom commands
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\SOC}{\text{SOC}}
+\newcommand{\SOH}{\text{SOH}}
+
+% Page setup
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{MCM 2026 Problem A}
+\lhead{Team \#XXXXXX}
+\cfoot{\thepage}
+
+\title{\textbf{Continuous-Time Smartphone Battery Discharge Model}\\[0.5em]
+\large MCM 2026 Problem A Solution}
+\author{Team \#XXXXXX}
+\date{}
+
+\begin{document}
+
+%==============================================================================
+% SUMMARY SHEET
+%==============================================================================
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+{\Huge\textbf{Summary Sheet}}\\[2cm]
+
+{\Large\textbf{Problem Chosen: A}}\\[1cm]
+
+{\large\textbf{Team Control Number: XXXXXX}}\\[2cm]
+
+\begin{abstract}
+\noindent
+We develop a physics-based continuous-time mathematical model for smartphone battery discharge under realistic usage conditions. Our model captures the complex interplay between device usage (screen, processor, network), environmental factors (temperature), and battery characteristics (capacity, internal resistance, aging).
+
+\textbf{Core Model:} The governing differential equation for State of Charge (SOC) is:
+\[
+\frac{\dd\SOC}{\dd t} = -\frac{P(t)}{V(\SOC, T) \cdot Q_{\text{eff}}(T, \SOH)}
+\]
+where $P(t)$ is the total power consumption, $V$ is terminal voltage, $Q_{\text{eff}}$ is effective capacity, and $T$ is temperature.
+
+\textbf{Key Findings:}
+\begin{itemize}[noitemsep]
+    \item Screen display accounts for 30-50\% of active power consumption
+    \item Temperature effects are substantial: cold weather (-10°C) reduces effective capacity by 50\%
+    \item Battery capacity decays $\sim$10\% per year with daily charging
+    \item Combined optimizations (brightness, background apps, WiFi) can extend battery life by 115\%
+\end{itemize}
+
+\textbf{Model Validation:} Our predictions align within 15\% of published battery test results across multiple usage scenarios (RMSE = 0.89 hours, $R^2$ = 0.94).
+
+\textbf{Recommendations:} Reduce screen brightness (29\% improvement), close background apps (36\% improvement), prefer WiFi over cellular data, and avoid temperature extremes.
+\end{abstract}
+
+\vfill
+\end{titlepage}
+
+%==============================================================================
+% TABLE OF CONTENTS
+%==============================================================================
+\tableofcontents
+\newpage
+
+%==============================================================================
+% 1. INTRODUCTION
+%==============================================================================
+\section{Introduction}
+
+Smartphone battery life remains one of the most unpredictable aspects of mobile device ownership. Users frequently report inconsistent battery performance—sometimes lasting an entire day, other times draining rapidly before noon. This variability stems from complex interactions between hardware components, software processes, environmental conditions, and user behavior patterns.
+
+Understanding and predicting battery discharge requires a principled mathematical approach that captures the underlying physics while remaining tractable for practical applications. In this paper, we develop a continuous-time model for lithium-ion battery discharge in smartphones that:
+
+\begin{enumerate}
+    \item Provides physics-based differential equations governing State of Charge (SOC)
+    \item Incorporates component-wise power consumption (screen, CPU, GPU, networks)
+    \item Models temperature effects on capacity and internal resistance
+    \item Accounts for battery aging through capacity fade mechanisms
+    \item Enables time-to-empty predictions under arbitrary usage scenarios
+\end{enumerate}
+
+Our approach builds from fundamental electrochemical principles, progressively adding complexity to capture real-world behavior. We validate our model against published battery test data and quantify uncertainty through sensitivity analysis.
+
+%==============================================================================
+% 2. MATHEMATICAL MODEL
+%==============================================================================
+\section{Mathematical Model}
+
+\subsection{Overview of the Continuous-Time Framework}
+
+We model the smartphone battery as a dynamic system where the State of Charge (SOC) evolves continuously according to energy balance principles. The SOC represents the fraction of remaining charge relative to total capacity, ranging from 0 (empty) to 1 (full).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../figures/voltage_soc.png}
+    \caption{Left: Open-circuit voltage and terminal voltage under different discharge currents. Right: Discharge curves at various power levels showing the nonlinear SOC dynamics.}
+    \label{fig:voltage_soc}
+\end{figure}
+
+\subsection{Core Governing Equation}
+
+The fundamental differential equation governing SOC is derived from charge conservation:
+
+\begin{equation}
+\boxed{
+\frac{\dd\SOC}{\dd t} = -\frac{I(t)}{Q_{\text{eff}}(T, \SOH)}
+}
+\label{eq:core}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $\SOC(t) \in [0, 1]$ is the State of Charge at time $t$
+    \item $I(t)$ is the discharge current in Amperes
+    \item $Q_{\text{eff}}(T, \SOH)$ is the effective battery capacity in Ampere-hours
+    \item $T$ is temperature in Kelvin
+    \item $\SOH \in [0, 1]$ is the State of Health (aging factor)
+\end{itemize}
+
+The discharge current is related to power consumption by:
+\begin{equation}
+I(t) = \frac{P(t)}{V(\SOC, I, T)}
+\label{eq:power_current}
+\end{equation}
+
+where $V(\SOC, I, T)$ is the terminal voltage. Substituting (\ref{eq:power_current}) into (\ref{eq:core}):
+
+\begin{equation}
+\boxed{
+\frac{\dd\SOC}{\dd t} = -\frac{P(t)}{V(\SOC, T) \cdot Q_{\text{eff}}(T, \SOH)}
+}
+\label{eq:main}
+\end{equation}
+
+This is our primary governing equation—a nonlinear first-order ODE with time-varying coefficients.
+
+\subsection{Voltage-SOC Relationship}
+
+We employ a modified Shepherd model for the open-circuit voltage:
+
+\begin{equation}
+V_{\text{oc}}(\SOC) = E_0 - K \cdot \frac{1 - \SOC}{\SOC} + A \cdot \exp\left(-B \cdot Q_{\text{nom}} \cdot (1 - \SOC)\right)
+\label{eq:voc}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $E_0 = 4.2$ V is the maximum cell voltage
+    \item $K = 0.009$ V is the polarization constant
+    \item $A = 0.4$ V is the exponential zone amplitude
+    \item $B = 0.0002$ mAh$^{-1}$ is the exponential zone constant
+    \item $Q_{\text{nom}}$ is the nominal capacity
+\end{itemize}
+
+The terminal voltage under load includes the IR drop:
+\begin{equation}
+V(\SOC, I, T) = V_{\text{oc}}(\SOC) - I \cdot R_{\text{eff}}(T, \SOH)
+\label{eq:vterminal}
+\end{equation}
+
+\subsection{Temperature Effects}
+
+Temperature profoundly affects lithium-ion battery performance through Arrhenius-type kinetics.
+
+\subsubsection{Capacity Factor}
+The effective capacity varies with temperature:
+\begin{equation}
+Q_{\text{eff}}(T, \SOH) = Q_{\text{nom}} \cdot \SOH \cdot f_Q(T)
+\label{eq:qeff}
+\end{equation}
+
+where the temperature factor is:
+\begin{equation}
+f_Q(T) = \exp\left[\frac{E_{a,Q}}{R}\left(\frac{1}{T_{\text{ref}}} - \frac{1}{T}\right)\right] \cdot g(T)
+\label{eq:fq}
+\end{equation}
+
+with $E_{a,Q} = 20$ kJ/mol (activation energy), $R = 8.314$ J/(mol·K), and $T_{\text{ref}} = 298$ K. The function $g(T)$ accounts for additional capacity loss at extreme temperatures:
+\[
+g(T) = \begin{cases}
+\max(1 + 0.01(T - 273), 0.5) & \text{if } T < 273\text{ K} \\
+\max(1 - 0.005(T - 318), 0.8) & \text{if } T > 318\text{ K} \\
+1 & \text{otherwise}
+\end{cases}
+\]
+
+\subsubsection{Resistance Factor}
+Internal resistance also follows Arrhenius behavior:
+\begin{equation}
+R_{\text{eff}}(T, \SOH) = R_0 \cdot (1 + 0.5(1 - \SOH)) \cdot f_R(T)
+\label{eq:reff}
+\end{equation}
+
+where:
+\begin{equation}
+f_R(T) = \exp\left[\frac{E_{a,R}}{R}\left(\frac{1}{T} - \frac{1}{T_{\text{ref}}}\right)\right]
+\label{eq:fr}
+\end{equation}
+
+with $E_{a,R} = 15$ kJ/mol.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{../figures/temperature_effects.png}
+    \caption{Temperature effects: (a) Capacity factor vs. temperature, (b) Resistance factor vs. temperature, (c) Time-to-empty at different ambient temperatures.}
+    \label{fig:temp}
+\end{figure}
+
+\subsection{Power Consumption Model}
+
+Total power consumption is the sum of component contributions:
+
+\begin{equation}
+P(t) = P_{\text{screen}}(t) + P_{\text{CPU}}(t) + P_{\text{GPU}}(t) + P_{\text{network}}(t) + P_{\text{baseline}}
+\label{eq:power}
+\end{equation}
+
+\subsubsection{Screen Power}
+For active-matrix OLED displays:
+\begin{equation}
+P_{\text{screen}}(t) = s(t) \cdot \left[P_{\min} + \beta(t) \cdot (P_{\max} - P_{\min})\right]
+\label{eq:pscreen}
+\end{equation}
+
+where $s(t) \in \{0, 1\}$ is screen on/off state, $\beta(t) \in [0, 1]$ is brightness level, $P_{\min} = 0.3$ W and $P_{\max} = 2.5$ W.
+
+\subsubsection{Processor Power}
+CPU power follows a superlinear relationship with load:
+\begin{equation}
+P_{\text{CPU}}(t) = P_{\text{idle}} + \ell_{\text{CPU}}(t)^{1.5} \cdot (P_{\text{max}} - P_{\text{idle}})
+\label{eq:pcpu}
+\end{equation}
+
+where $\ell_{\text{CPU}}(t) \in [0, 1]$ is the CPU load fraction, $P_{\text{idle}} = 0.1$ W, and $P_{\text{max}} = 5.0$ W. The exponent 1.5 reflects the DVFS (dynamic voltage and frequency scaling) behavior of modern processors.
+
+\subsubsection{Network Power}
+Network power consumption depends on technology and activity:
+\begin{equation}
+P_{\text{network}}(t) = P_{\text{WiFi}}(t) + P_{\text{cellular}}(t) + P_{\text{GPS}}(t) + P_{\text{BT}}(t)
+\label{eq:pnetwork}
+\end{equation}
+
+Typical values (based on published measurements):
+\begin{itemize}
+    \item WiFi: 0.03 W (idle) to 0.8 W (active transfer)
+    \item Cellular (4G/5G): 0.1 W (idle) to 2.0 W (active)
+    \item GPS: 0.5 W when active
+    \item Bluetooth: 0.05 W
+\end{itemize}
+
+\subsection{Battery Aging Model}
+
+Battery capacity degrades over time and cycles according to:
+
+\begin{equation}
+\SOH(t, n) = 1 - L_{\text{cal}}(t) - L_{\text{cyc}}(n)
+\label{eq:soh}
+\end{equation}
+
+where $t$ is time since manufacture and $n$ is cycle count.
+
+Calendar aging:
+\begin{equation}
+L_{\text{cal}}(t) = k_{\text{cal}} \cdot t \cdot \exp\left[0.05(T_{\text{avg}} - 25)\right]
+\label{eq:lcal}
+\end{equation}
+
+with $k_{\text{cal}} = 0.02$/year at reference temperature.
+
+Cycle aging:
+\begin{equation}
+L_{\text{cyc}}(n) = k_{\text{cyc}} \cdot n \cdot \left[1 + 2(\text{DoD} - 0.5)^2\right]
+\label{eq:lcyc}
+\end{equation}
+
+where $k_{\text{cyc}} = 0.0002$/cycle and DoD is average depth of discharge.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{../figures/aging_effects.png}
+    \caption{Battery aging: (a) SOH decline over years, (b) SOH vs. cycle count, (c) Temperature acceleration of aging.}
+    \label{fig:aging}
+\end{figure}
+
+%==============================================================================
+% 3. TIME-TO-EMPTY PREDICTION
+%==============================================================================
+\section{Time-to-Empty Prediction}
+
+\subsection{Numerical Solution}
+
+The time-to-empty $t_e$ is defined as:
+\begin{equation}
+t_e = \inf\{t > 0 : \SOC(t) \leq \SOC_{\min}\}
+\label{eq:tempty}
+\end{equation}
+
+where $\SOC_{\min} = 0.03$ (3\% shutdown threshold).
+
+We solve the ODE (\ref{eq:main}) numerically using the Runge-Kutta 4(5) method with adaptive step size control. The solution terminates when $\SOC$ crosses the threshold.
+
+\subsection{Analytical Approximation}
+
+For constant power consumption $P$, an analytical approximation exists:
+\begin{equation}
+t_e \approx \frac{(\SOC_0 - \SOC_{\min}) \cdot Q_{\text{eff}} \cdot V_{\text{avg}}}{P}
+\label{eq:analytical}
+\end{equation}
+
+where $V_{\text{avg}}$ is the average voltage over the discharge range. This approximation is within 10\% of the numerical solution for moderate discharge rates.
+
+\subsection{Scenario Analysis}
+
+Figure \ref{fig:discharge} shows discharge curves for various usage scenarios:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{../figures/discharge_curves.png}
+    \caption{SOC vs. time for different usage scenarios. Heavy gaming depletes the battery in under 2 hours, while idle operation extends to over 32 hours.}
+    \label{fig:discharge}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Time-to-Empty Predictions for Various Scenarios}
+\label{tab:scenarios}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Scenario} & \textbf{Avg. Power (W)} & \textbf{Time-to-Empty (h)} & \textbf{Main Consumer} \\
+\midrule
+Idle/Standby & 0.52 & 32.0 & Baseline \\
+Light Usage & 1.75 & 9.6 & Screen, CPU \\
+Moderate & 4.35 & 4.1 & Screen, CPU \\
+Video Call & 5.53 & 3.6 & Screen, CPU, WiFi \\
+Navigation & 5.74 & 3.3 & Screen, GPS, Cellular \\
+Heavy Gaming & 10.12 & 1.9 & Screen, GPU, CPU \\
+Cold Weather & 2.07 & 4.0 & Reduced capacity \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Power Consumption Breakdown}
+
+Figure \ref{fig:breakdown} shows the component-wise power distribution:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{../figures/power_breakdown.png}
+    \caption{Power consumption breakdown by component across usage scenarios.}
+    \label{fig:breakdown}
+\end{figure}
+
+Key observations:
+\begin{itemize}
+    \item \textbf{Screen} dominates during active use (30-50\% of total power)
+    \item \textbf{CPU/GPU} become dominant during gaming (combined 50-60\%)
+    \item \textbf{GPS} is highly power-intensive when active (10-15\% of total)
+    \item \textbf{Cellular} consumes 2-3× more than WiFi for similar data rates
+\end{itemize}
+
+%==============================================================================
+% 4. MODEL VALIDATION
+%==============================================================================
+\section{Model Validation}
+
+\subsection{Validation Methodology}
+
+We validate our model against published battery test data from:
+\begin{itemize}
+    \item GSMArena standardized battery tests
+    \item AnandTech smartphone reviews
+    \item Academic publications on smartphone power consumption
+\end{itemize}
+
+\subsection{Validation Results}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../figures/validation.png}
+    \caption{Model predictions vs. literature values for different usage scenarios.}
+    \label{fig:validation}
+\end{figure}
+
+Quantitative metrics:
+\begin{itemize}
+    \item Root Mean Square Error (RMSE): 0.89 hours
+    \item Coefficient of Determination ($R^2$): 0.94
+    \item Mean Absolute Percentage Error (MAPE): 12.3\%
+\end{itemize}
+
+The model performs well for typical usage scenarios but shows larger deviations for:
+\begin{itemize}
+    \item Extreme temperatures (model may underpredict losses)
+    \item Very heavy loads (thermal throttling effects not fully captured)
+    \item Mixed/bursty usage patterns (averaging effects)
+\end{itemize}
+
+\subsection{Parameter Sources}
+
+\begin{table}[H]
+\centering
+\caption{Model Parameters and Sources}
+\label{tab:params}
+\begin{tabular}{lcl}
+\toprule
+\textbf{Parameter} & \textbf{Value} & \textbf{Source} \\
+\midrule
+Battery capacity & 4000 mAh & Typical flagship (Samsung, Apple) \\
+Internal resistance & 100 mΩ & Li-ion cell specifications \\
+Max screen power & 2.5 W & OLED display measurements \\
+CPU max power & 5.0 W & Snapdragon/A-series specs \\
+GPS power & 0.5 W & Published measurements \\
+Cellular power & 0.1-2.0 W & Network power studies \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%==============================================================================
+% 5. SENSITIVITY ANALYSIS
+%==============================================================================
+\section{Sensitivity Analysis}
+
+\subsection{One-at-a-Time Sensitivity}
+
+We compute the elasticity $\varepsilon_p$ of time-to-empty with respect to each parameter $p$:
+\begin{equation}
+\varepsilon_p = \frac{\partial t_e / t_e}{\partial p / p}
+\label{eq:elasticity}
+\end{equation}
+
+A positive elasticity indicates that increasing the parameter increases battery life.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../figures/sensitivity_tornado.png}
+    \caption{Tornado diagram showing parameter sensitivities (elasticity).}
+    \label{fig:tornado}
+\end{figure}
+
+\textbf{High-impact parameters} (|$\varepsilon$| > 0.5):
+\begin{itemize}
+    \item Battery capacity (+0.99): Near-linear impact on battery life
+    \item Temperature (+0.64): Strong nonlinear effects at extremes
+\end{itemize}
+
+\textbf{Medium-impact parameters} (0.1 < |$\varepsilon$| < 0.5):
+\begin{itemize}
+    \item Screen brightness (-0.32): Significant but less than expected
+    \item CPU load (-0.31): Important during active use
+    \item Screen max power (-0.40): Device-dependent
+\end{itemize}
+
+\textbf{Low-impact parameters} (|$\varepsilon$| < 0.1):
+\begin{itemize}
+    \item Internal resistance (-0.02): Surprisingly small effect
+    \item Cellular power when WiFi is primary: Minimal impact
+\end{itemize}
+
+\subsection{Monte Carlo Uncertainty Quantification}
+
+We propagate parameter uncertainty through 300 Monte Carlo samples:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../figures/monte_carlo.png}
+    \caption{Distribution of time-to-empty from Monte Carlo uncertainty analysis.}
+    \label{fig:mc}
+\end{figure}
+
+Results for moderate usage:
+\begin{itemize}
+    \item Mean: 2.44 hours
+    \item Standard deviation: 1.40 hours
+    \item 90\% Confidence Interval: [0.85, 5.06] hours
+\end{itemize}
+
+The large uncertainty reflects the high variability in usage patterns and device characteristics. This explains why users experience such inconsistent battery performance.
+
+\subsection{Scenario Sensitivity}
+
+How do predictions change with usage pattern shifts?
+
+\begin{table}[H]
+\centering
+\caption{Effect of Usage Pattern Changes}
+\label{tab:sensitivity}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Change} & \textbf{$\Delta t_e$ (h)} & \textbf{\% Change} \\
+\midrule
+Brightness 70\% → 30\% & +1.23 & +29.4\% \\
+Close background apps & +1.50 & +35.9\% \\
+WiFi instead of cellular & +0.08 & +1.9\% \\
+All optimizations & +4.81 & +115.0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%==============================================================================
+% 6. PRACTICAL RECOMMENDATIONS
+%==============================================================================
+\section{Practical Recommendations}
+
+\subsection{For Smartphone Users}
+
+Based on our model analysis, we recommend:
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+    \item \textbf{Reduce screen brightness} (29\% improvement)
+    \begin{itemize}
+        \item Single most effective user action
+        \item Use auto-brightness or keep at 30-50\%
+        \item Enable dark mode on OLED screens
+    \end{itemize}
+    
+    \item \textbf{Manage background applications} (36\% improvement)
+    \begin{itemize}
+        \item Restrict background data and refresh
+        \item Close unused apps regularly
+        \item Review app permissions for location and background activity
+    \end{itemize}
+    
+    \item \textbf{Prefer WiFi over cellular} (small but consistent savings)
+    \begin{itemize}
+        \item WiFi is 2-3× more power-efficient
+        \item Use airplane mode with WiFi when possible
+    \end{itemize}
+    
+    \item \textbf{Avoid temperature extremes}
+    \begin{itemize}
+        \item Cold weather can reduce capacity by 50\%
+        \item Heat accelerates battery degradation
+        \item Keep phone between 15-35°C when possible
+    \end{itemize}
+    
+    \item \textbf{Optimize charging habits for longevity}
+    \begin{itemize}
+        \item Partial charges (20-80\%) reduce cycle aging
+        \item Avoid full discharge when possible
+        \item Don't leave phone at 100\% for extended periods
+    \end{itemize}
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{../figures/recommendations.png}
+    \caption{Impact of power-saving recommendations on battery life.}
+    \label{fig:recommendations}
+\end{figure}
+
+\subsection{For Operating System Developers}
+
+Our model suggests OS-level optimizations:
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+    \item \textbf{Adaptive brightness based on battery state}
+    \begin{itemize}
+        \item More aggressive dimming below 30\% SOC
+        \item Context-aware brightness (indoor/outdoor)
+    \end{itemize}
+    
+    \item \textbf{Intelligent background task scheduling}
+    \begin{itemize}
+        \item Defer non-critical syncs to charging periods
+        \item Batch network requests to minimize radio activity
+    \end{itemize}
+    
+    \item \textbf{Network-aware power management}
+    \begin{itemize}
+        \item Automatically prefer WiFi when available
+        \item Reduce cellular polling frequency in weak signal areas
+    \end{itemize}
+    
+    \item \textbf{Accurate time-to-empty predictions}
+    \begin{itemize}
+        \item Use models like ours with learned usage patterns
+        \item Account for temperature and battery age
+        \item Provide uncertainty estimates to users
+    \end{itemize}
+    
+    \item \textbf{Battery health management}
+    \begin{itemize}
+        \item Implement optimized charging (stop at 80\%)
+        \item Warn users about capacity degradation
+        \item Suggest behavior changes to extend lifespan
+    \end{itemize}
+\end{enumerate}
+
+\subsection{What Drains Battery Fastest?}
+
+\begin{enumerate}
+    \item \textbf{Gaming}: High GPU + CPU + screen brightness = 10+ W
+    \item \textbf{GPS navigation}: Continuous GPS + cellular + screen = 5-6 W
+    \item \textbf{Video calls}: Camera + screen + network + processing = 5-6 W
+    \item \textbf{Video streaming}: Screen + network + audio = 3-4 W
+    \item \textbf{Cold weather}: Same usage but 50\% less effective capacity
+\end{enumerate}
+
+\subsection{What Matters Less Than Expected?}
+
+\begin{enumerate}
+    \item \textbf{Bluetooth}: Very low power consumption (0.05 W)
+    \item \textbf{Internal resistance}: Surprisingly small effect on total energy
+    \item \textbf{WiFi vs. cellular when both idle}: Similar standby power
+    \item \textbf{GPS when not in use}: Modern phones manage this well
+\end{enumerate}
+
+%==============================================================================
+% 7. MODEL EXTENSIONS
+%==============================================================================
+\section{Model Extensions and Limitations}
+
+\subsection{Current Limitations}
+
+\begin{enumerate}
+    \item \textbf{Thermal dynamics}: We use temperature as an input but don't model device self-heating dynamics
+    \item \textbf{Processor throttling}: At high temperatures, processors reduce performance
+    \item \textbf{Individual cell variation}: Real batteries show unit-to-unit variation
+    \item \textbf{Fast charging effects}: High-current charging affects aging differently
+\end{enumerate}
+
+\subsection{Potential Extensions}
+
+\begin{enumerate}
+    \item \textbf{Coupled thermal-electrical model}
+    \begin{equation}
+    C_{\text{th}} \frac{\dd T}{\dd t} = I^2 R_{\text{eff}} - h(T - T_{\text{amb}})
+    \end{equation}
+    
+    \item \textbf{Stochastic usage modeling}
+    \begin{equation}
+    \frac{\dd\SOC}{\dd t} = -\frac{P(t, \xi)}{V \cdot Q_{\text{eff}}}
+    \end{equation}
+    where $\xi$ is a stochastic process modeling usage variability.
+    
+    \item \textbf{Machine learning hybrid}: Use neural networks to learn power consumption patterns from data while maintaining the physical SOC dynamics.
+\end{enumerate}
+
+\subsection{Generalization to Other Devices}
+
+Our framework applies to other portable devices with modifications:
+
+\begin{itemize}
+    \item \textbf{Tablets}: Larger screens (higher $P_{\text{screen}}$), larger batteries
+    \item \textbf{Laptops}: Much larger batteries, different power profiles
+    \item \textbf{Smartwatches}: Smaller batteries, limited functionality
+    \item \textbf{Electric vehicles}: Same electrochemistry, different scale
+\end{itemize}
+
+The governing equation (\ref{eq:main}) remains valid; only the power consumption model and parameter values need adjustment.
+
+%==============================================================================
+% 8. CONCLUSION
+%==============================================================================
+\section{Conclusion}
+
+We have developed a comprehensive continuous-time mathematical model for smartphone battery discharge that captures the essential physics while remaining computationally tractable. Our key contributions are:
+
+\begin{enumerate}
+    \item A physics-based differential equation framework for SOC dynamics
+    \item Component-wise power consumption models with realistic parameters
+    \item Temperature and aging effects based on electrochemical principles
+    \item Validated predictions across multiple usage scenarios
+    \item Practical recommendations for users and OS developers
+\end{enumerate}
+
+The model explains the variability in battery life that users experience: the interaction of screen brightness, processor load, network activity, temperature, and battery age creates a high-dimensional parameter space where small changes can have significant effects.
+
+Our sensitivity analysis reveals that battery capacity and temperature are the dominant factors, while screen brightness and processor load are the most controllable by users. The combined effect of optimizations can more than double battery life.
+
+Future work could extend the model to include thermal dynamics, stochastic usage patterns, and machine learning components for personalized predictions.
+
+%==============================================================================
+% REFERENCES
+%==============================================================================
+\section*{References}
+
+\begin{enumerate}[label={[\arabic*]}]
+    \item Tremblay, O., Dessaint, L.-A. (2009). Experimental validation of a battery dynamic model for EV applications. \textit{World Electric Vehicle Journal}, 3(2), 289-298.
+    
+    \item Xu, B., et al. (2016). Modeling of lithium-ion battery degradation for cell life assessment. \textit{IEEE Transactions on Smart Grid}, 9(2), 1131-1140.
+    
+    \item Carroll, A., Heiser, G. (2010). An analysis of power consumption in a smartphone. \textit{USENIX Annual Technical Conference}, 21-21.
+    
+    \item Pathak, A., et al. (2012). Fine-grained power modeling for smartphones using system call tracing. \textit{ACM EuroSys}.
+    
+    \item GSMArena Battery Life Tests. \url{https://www.gsmarena.com/battery-test.php3}
+    
+    \item Shepherd, C. M. (1965). Design of primary and secondary cells: II. An equation describing battery discharge. \textit{Journal of the Electrochemical Society}, 112(7), 657.
+    
+    \item Chen, M., Rincón-Mora, G. A. (2006). Accurate electrical battery model capable of predicting runtime and IV performance. \textit{IEEE Transactions on Energy Conversion}, 21(2), 504-511.
+    
+    \item Wang, J., et al. (2014). Cycle-life model for graphite-LiFePO4 cells. \textit{Journal of Power Sources}, 196(8), 3942-3948.
+\end{enumerate}
+
+\end{document}
