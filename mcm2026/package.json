@@ -1,0 +1,15 @@
+{
+  "name": "mcm2026",
+  "version": "1.0.0",
+  "description": "MCM 2026 Problem A report generator",
+  "main": "generate_report.js",
+  "scripts": {
+    "build": "node generate_report.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "pdfkit": "^0.17.2"
+  }
+}
